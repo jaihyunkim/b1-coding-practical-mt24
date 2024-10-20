@@ -79,8 +79,13 @@ class Mission:
         # Load mission data
         data = pd.read_csv(file_name)
 
-        # Return mission data as new instance of class
-        return data
+        # Extract columns from data
+        reference = data['reference'].values
+        cave_height = data['cave_height'].values
+        cave_depth = data['cave_depth'].values
+
+        # Return mission class with extracted data
+        return cls(reference, cave_height, cave_depth)
 
 
 class ClosedLoop:
@@ -99,13 +104,20 @@ class ClosedLoop:
         self.plant.reset_state()
 
         for t in range(T):
+            # print(f"Running time step {t}")  # Added print to check if loop is running
             positions[t] = self.plant.get_position()
             observation_t = self.plant.get_depth()
-            # Call your controller here
+            
+            # Calculate error and controller action
+            error = mission.reference[t] - observation_t
+            actions[t] = self.controller.control(error)
+            # print(f"Time {t}, Error: {error}, Control Action: {actions[t]}") # Added print to check calculations change with iteration
+
             self.plant.transition(actions[t], disturbances[t])
 
         return Trajectory(positions)
         
     def simulate_with_random_disturbances(self, mission: Mission, variance: float = 0.5) -> Trajectory:
+        # print("Starting simulation with random disturbances...")  # Added print for debugging
         disturbances = np.random.normal(0, variance, len(mission.reference))
         return self.simulate(mission, disturbances)
