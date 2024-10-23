@@ -79,7 +79,7 @@ class Mission:
         # Load mission data
         data = pd.read_csv(file_name)
 
-        # Extract columns from data
+        # Extract columns from data into Numpy Arrays
         reference = data['reference'].values
         cave_height = data['cave_height'].values
         cave_depth = data['cave_depth'].values
@@ -107,7 +107,7 @@ class ClosedLoop:
             # print(f"Running time step {t}")  # Added print to check if loop is running
             positions[t] = self.plant.get_position()
             observation_t = self.plant.get_depth()
-            
+
             # Calculate error and controller action
             error = mission.reference[t] - observation_t
             actions[t] = self.controller.control(error)
